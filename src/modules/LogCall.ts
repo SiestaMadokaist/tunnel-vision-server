@@ -1,16 +1,5 @@
 import dynamoose from 'dynamoose';
 import { RuntimeEnv } from '../config/env';
-// dynamoose.aws.ddb.local('http://host.docker.internal:8000');
-
-// interface ICallback {
-// 	headers: {};
-// 	body: {};
-// 	query: {};
-// 	params: {};
-// 	url: {};
-// 	room: string;
-// 	createdAt: number;
-// }
 const schema = new dynamoose.Schema(
 	{
 		headers: Object,
