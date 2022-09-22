@@ -1,0 +1,13 @@
+{
+	"ts-node": {
+		"transpileOnly": true
+	},
+	"compilerOptions": {
+		"noImplicitOverride": true,
+		"baseUrl": ".",
+		"paths": {
+			"@functions/*": ["src/functions/*"],
+			"@libs/*": ["src/libs/*"]
+		}
+	}
+}

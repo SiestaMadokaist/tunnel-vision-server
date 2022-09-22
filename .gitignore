@@ -1,0 +1,15 @@
+# package directories
+node_modules
+jspm_packages
+
+# Serverless directories
+.serverless
+
+# esbuild directories
+.esbuild
+lib/
+.devcontainer
+.env
+dist/
+sample
+src/playground
