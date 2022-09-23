@@ -16,7 +16,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 			path: req.path,
 			method: req.method as 'GET'
 		});
-		res.status(response.statusCode).json(response.data);
+		res.status(response.statusCode).send(response.data);
 	})().catch(next);
 });
 

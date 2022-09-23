@@ -25,6 +25,7 @@ export class ClientSQSHub {
 		consumer: Consumer;
 		started: boolean;
 	}>();
+	#publishCounter: number = 0;
 	constructor(private props: IClientSQSHub) {}
 
 	client(): sqs.SQSClient {
@@ -73,16 +74,16 @@ export class ClientSQSHub {
 			MessageBody: JSON.stringify({ ...response }),
 			QueueUrl: this.props.outgoing.channel
 		});
-		console.log(`ClientHub: publish to ${this.props.outgoing.channel}`);
+		const { channel } = this.props.outgoing;
+		console.log(`${this.#publishCounter} ClientHub: publish ${response.requestId} to ${channel}`);
 		this.client().send(command).catch(console.error);
+		this.#publishCounter++;
 		return response.requestId;
 	}
 
 	protected async handleMessage(message: SQSMessage): Promise<void> {
 		const request: IRequestMessage = JSON.parse(message.Body ?? '{}');
-		console.log({ request });
 		const response = await this.getResponse(request);
-		console.log({ response });
 		this.publish(response);
 	}
 

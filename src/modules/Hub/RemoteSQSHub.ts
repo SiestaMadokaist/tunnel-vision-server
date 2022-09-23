@@ -19,13 +19,14 @@ export interface IRespEmitter extends EventEmitter {
 	emit(requestId: string, response: IResponse): boolean;
 }
 
-const RESPONSE_TIMEOUT = 5000;
+const RESPONSE_TIMEOUT = 25000;
 export class RemoteSQSHub {
 	#memo = new Memoizer<{
 		consumer: Consumer;
 		started: boolean;
 	}>();
 	#emitter: IRespEmitter = new EventEmitter();
+	#publishCounter: number = 0;
 	constructor(private props: ISQSHub) {}
 
 	client(): sqs.SQSClient {
@@ -61,7 +62,10 @@ export class RemoteSQSHub {
 			QueueUrl: this.props.outgoing.channel
 		});
 		this.client().send(command).catch(console.error);
-		console.log(`RemoteHub: publish to ${this.props.outgoing.channel}`);
+		const { channel } = this.props.outgoing;
+		const { path } = request;
+		console.log(`${this.#publishCounter}. RemoteHub: publish ${path} ${requestId} to ${channel}`);
+		this.#publishCounter++;
 		return requestId;
 	}
 

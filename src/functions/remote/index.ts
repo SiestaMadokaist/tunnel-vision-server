@@ -1,21 +1,23 @@
+const cors = {
+	origins: ['*'],
+	headers: ['Authorization', 'Content-Type', 'Timeout', 'Cache-Control', 'X-Transaction-Id'],
+	allowCredentials: true
+};
 export const app = {
-	handler: `dist/functions/app/app.handler`,
+	handler: `dist/functions/remote/app.handler`,
 	events: [
 		{
 			http: {
-				path: '/{method+}',
+				path: '/',
 				method: 'any',
-				cors: {
-					origins: ['*'],
-					headers: [
-						'Authorization',
-						'Content-Type',
-						'Timeout',
-						'Cache-Control',
-						'X-Transaction-Id'
-					],
-					allowCredentials: true
-				},
+				cors
+			}
+		},
+		{
+			http: {
+				path: '{method+}',
+				method: 'any',
+				cors,
 				request: {
 					parameters: {
 						paths: {

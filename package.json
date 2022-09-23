@@ -1,16 +1,18 @@
 {
-	"name": "ramadoka.com",
+	"name": "tunnel-vision",
 	"version": "0.1.0",
 	"type": "commonjs",
 	"engines": {
 		"node": "16"
 	},
-	"private": true,
+	"private": false,
+	"bin": "./dist/functions/",
 	"scripts": {
 		".prepare": "husky install",
 		"pre-commit-lint": "lint-staged",
 		"compile": "tsc",
-		"start": "node -r ts-node/register src/functions/local/app.ts",
+		"local": "node -r ts-node/register src/functions/local/app.ts",
+		"remote": "node -r ts-node/register src/functions/remote/app.ts",
 		"package": "serverless package --verbose",
 		"sls": "serverless",
 		"deploy": "npm run compile && serverless deploy",

@@ -1,14 +1,14 @@
-import { RuntimeEnv } from '../../config/env';
 import * as sqs from '@aws-sdk/client-sqs';
 import { ClientSQSHub } from '../../modules/Hub/ClientSQSHub';
+import { LocalEnv } from './env';
 
 const hub = new ClientSQSHub({
 	incoming: {
-		channel: RuntimeEnv.REQUEST_QUEUE,
-		hostname: RuntimeEnv.HOSTNAME
+		channel: LocalEnv.REQUEST_QUEUE,
+		hostname: LocalEnv.TARGET_HOST
 	},
 	outgoing: {
-		channel: RuntimeEnv.RESPONSE_QUEUE,
+		channel: LocalEnv.RESPONSE_QUEUE,
 		client: new sqs.SQSClient({})
 	}
 });

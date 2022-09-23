@@ -7,6 +7,7 @@ const serverlessConfiguration: AWS = {
 	frameworkVersion: '3',
 	plugins: [],
 	provider: {
+		memorySize: 256,
 		region: BuildEnv.DEPLOY_REGION as AWS['provider']['region'],
 		name: 'aws',
 		runtime: 'nodejs16.x',

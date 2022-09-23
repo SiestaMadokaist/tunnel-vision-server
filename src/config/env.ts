@@ -20,10 +20,9 @@ export const BuildEnv: Record<BuildEnvs, string> = {
 };
 
 const runtimeEnv: fnFromEnv<RuntimeEnvs> = (k: RuntimeEnvs) => fromEnv(k);
-export type RuntimeEnvs = 'NODE_ENV' | 'HOSTNAME' | 'REQUEST_QUEUE' | 'RESPONSE_QUEUE';
+export type RuntimeEnvs = 'NODE_ENV' | 'REQUEST_QUEUE' | 'RESPONSE_QUEUE';
 export const RuntimeEnv: Record<RuntimeEnvs, string> = {
 	NODE_ENV: runtimeEnv('NODE_ENV'),
 	REQUEST_QUEUE: runtimeEnv('REQUEST_QUEUE'),
-	RESPONSE_QUEUE: runtimeEnv('RESPONSE_QUEUE'),
-	HOSTNAME: runtimeEnv('HOSTNAME')
+	RESPONSE_QUEUE: runtimeEnv('RESPONSE_QUEUE')
 };
