@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import * as sqs from '@aws-sdk/client-sqs';
 import { ClientSQSHub } from '../../modules/Hub/ClientSQSHub';
 import { LocalEnv } from './env';
