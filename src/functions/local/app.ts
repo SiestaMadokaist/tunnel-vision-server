@@ -11,7 +11,8 @@ const hub = new ClientSQSHub({
 	outgoing: {
 		channel: LocalEnv.RESPONSE_QUEUE,
 		client: new sqs.SQSClient({})
-	}
+	},
+	stdout: process.stdout
 });
 
 async function main(): Promise<void> {

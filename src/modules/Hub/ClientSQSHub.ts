@@ -4,6 +4,7 @@ import { Memoizer } from '../../helper/Memoizer';
 import EventEmitter from 'events';
 import axios, { AxiosError, AxiosInstance, AxiosRequestHeaders } from 'axios';
 import { IRequestMessage, IResponse } from './interface';
+import { Writable } from 'stream';
 export interface IClientSQSHub {
 	incoming: {
 		channel: string;
@@ -13,6 +14,7 @@ export interface IClientSQSHub {
 		channel: string;
 		client: sqs.SQSClient;
 	};
+	stdout: Writable;
 }
 
 export interface IRespEmitter<O> extends EventEmitter {
@@ -32,6 +34,10 @@ export class ClientSQSHub {
 		return this.props.outgoing.client;
 	}
 
+	private log(message: string): void {
+		this.props.stdout.write(`${message}\n`);
+	}
+
 	start(): boolean {
 		return this.#memo.memoize('started', () => {
 			const consumer = this.requestConsumer();
@@ -46,6 +52,8 @@ export class ClientSQSHub {
 
 	async getResponse(request: IRequestMessage): Promise<IResponse> {
 		delete request.headers['host'];
+		delete request.headers['x-forwarded-port'];
+		delete request.headers['x-forwarded-proto'];
 		const data = request.method.toUpperCase() === 'GET' ? undefined : request.body;
 		const response = await this.request()
 			.request({
@@ -57,6 +65,9 @@ export class ClientSQSHub {
 			})
 			.catch((error: AxiosError) => {
 				if (error.isAxiosError) {
+					if (typeof error.response === 'undefined') {
+						this.log(`failed to connect ${this.props.incoming.hostname}`);
+					}
 					return error.response;
 				}
 				throw error;
@@ -74,8 +85,9 @@ export class ClientSQSHub {
 			MessageBody: JSON.stringify({ ...response }),
 			QueueUrl: this.props.outgoing.channel
 		});
-		const { channel } = this.props.outgoing;
-		console.log(`${this.#publishCounter} ClientHub: publish ${response.requestId} to ${channel}`);
+		this.log(
+			`${this.#publishCounter} ClientHub: publish [${response.statusCode}] ${response.requestId}`
+		);
 		this.client().send(command).catch(console.error);
 		this.#publishCounter++;
 		return response.requestId;
@@ -89,6 +101,7 @@ export class ClientSQSHub {
 
 	private requestConsumer(): Consumer {
 		return this.#memo.memoize('consumer', () => {
+			this.log(`listening message from ${this.props.incoming.channel}`);
 			return Consumer.create({
 				queueUrl: this.props.incoming.channel,
 				handleMessage: async (message) => this.handleMessage(message).catch(console.error)

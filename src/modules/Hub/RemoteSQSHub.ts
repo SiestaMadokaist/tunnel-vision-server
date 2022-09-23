@@ -54,9 +54,7 @@ export class RemoteSQSHub {
 		});
 	}
 
-	protected _publish(request: IRequest): string {
-		const rng = Math.floor(Math.random() * Math.pow(10, 7));
-		const requestId = `${Date.now()}-${rng}`;
+	protected _publish(requestId: string, request: IRequest): string {
 		const command = new sqs.SendMessageCommand({
 			MessageBody: JSON.stringify({ ...request, requestId }),
 			QueueUrl: this.props.outgoing.channel
@@ -70,7 +68,9 @@ export class RemoteSQSHub {
 	}
 
 	private publish(request: IRequest, resolve: (resp: IResponse) => void): string {
-		const requestId = this._publish(request);
+		const rng = Math.floor(Math.random() * Math.pow(10, 7));
+		const requestId = `${Date.now()}-${rng}`;
+		this._publish(requestId, request);
 		this.#emitter.once(requestId, resolve);
 		return requestId;
 	}
