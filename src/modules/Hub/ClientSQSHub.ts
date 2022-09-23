@@ -80,21 +80,21 @@ export class ClientSQSHub {
 		};
 	}
 
-	protected publish(response: IResponse): string {
+	protected async publish(response: IResponse): Promise<void> {
 		const command = new sqs.SendMessageCommand({
 			MessageBody: JSON.stringify({ ...response }),
 			QueueUrl: this.props.outgoing.channel
 		});
 		this.log(
-			`${this.#publishCounter} ClientHub: publish [${response.statusCode}] ${response.requestId}`
+			`${this.#publishCounter} ClientHub: publish [${response.statusCode}] #${response.requestId}`
 		);
-		this.client().send(command).catch(console.error);
+		await this.client().send(command).catch(console.error);
 		this.#publishCounter++;
-		return response.requestId;
 	}
 
 	protected async handleMessage(message: SQSMessage): Promise<void> {
 		const request: IRequestMessage = JSON.parse(message.Body ?? '{}');
+		this.log(`received: ${request.path} #${request.requestId}`);
 		const response = await this.getResponse(request);
 		this.publish(response);
 	}
