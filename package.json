@@ -6,11 +6,12 @@
 		"node": "16"
 	},
 	"private": false,
-	"bin": "./dist/functions/",
+	"bin": "./dist/functions/local/app.js",
 	"scripts": {
 		".prepare": "husky install",
 		"pre-commit-lint": "lint-staged",
 		"compile": "tsc",
+		"prepublish": "npm run compile",
 		"local": "node -r ts-node/register src/functions/local/app.ts",
 		"remote": "node -r ts-node/register src/functions/remote/app.ts",
 		"package": "serverless package --verbose",
