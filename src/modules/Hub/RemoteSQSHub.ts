@@ -4,6 +4,7 @@ import { Memoizer } from '../../helper/Memoizer';
 import EventEmitter from 'events';
 import assert from 'assert';
 import { IRequest, IResponse } from './interface';
+import { RequestID } from '../ActivityLog/db';
 export interface ISQSHub {
 	outgoing: {
 		channel: string;
@@ -41,35 +42,37 @@ export class RemoteSQSHub {
 		});
 	}
 
-	getResponse(request: IRequest): Promise<IResponse> {
+	getResponse(requestId: RequestID, request: IRequest): Promise<IResponse> {
 		this.start();
 		return new Promise((rs, rj) => {
 			const t = setTimeout(() => {
 				rj(new Error('timeout'));
 			}, RESPONSE_TIMEOUT);
-			this.publish(request, (resp) => {
+			this.publish(requestId, request, (resp) => {
 				clearTimeout(t);
 				rs(resp);
 			});
 		});
 	}
 
-	protected _publish(requestId: string, request: IRequest): string {
+	private _publish(requestId: string, request: IRequest): string {
 		const command = new sqs.SendMessageCommand({
 			MessageBody: JSON.stringify({ ...request, requestId }),
 			QueueUrl: this.props.outgoing.channel
 		});
 		this.client().send(command).catch(console.error);
 		const { channel } = this.props.outgoing;
-		const { path } = request;
+		const { url: path } = request;
 		console.log(`${this.#publishCounter}. RemoteHub: publish ${path} ${requestId} to ${channel}`);
 		this.#publishCounter++;
 		return requestId;
 	}
 
-	private publish(request: IRequest, resolve: (resp: IResponse) => void): string {
-		const rng = Math.floor(Math.random() * Math.pow(10, 7));
-		const requestId = `${Date.now()}-${rng}`;
+	private publish(
+		requestId: RequestID,
+		request: IRequest,
+		resolve: (resp: IResponse) => void
+	): string {
 		this._publish(requestId, request);
 		this.#emitter.once(requestId, resolve);
 		return requestId;

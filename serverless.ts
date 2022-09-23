@@ -25,7 +25,7 @@ const serverlessConfiguration: AWS = {
 			role: BuildEnv.IAM_ROLE
 		},
 		environment: {
-			VERSION: '1',
+			VERSION: '3',
 			AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1',
 			NODE_OPTIONS: '--enable-source-maps --stack-trace-limit=1000',
 			...RuntimeEnv
@@ -33,7 +33,7 @@ const serverlessConfiguration: AWS = {
 	},
 	functions,
 	package: {
-		exclude: ['node_modules/aws-sdk/**', 'node_modules/typescript'],
+		exclude: ['node_modules/aws-sdk/**', 'node_modules/typescript', '.env', '.envs/**'],
 		individually: true
 	},
 	custom: {

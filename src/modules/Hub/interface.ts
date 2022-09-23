@@ -1,10 +1,10 @@
 export interface IHubMessage {
-	requestId: string;
+	requestId: `${number}-${number}`;
 }
 
 export interface IResponse extends IHubMessage {
 	headers: Record<string, string>;
-	data: unknown;
+	body: unknown;
 	statusCode: number;
 }
 
@@ -12,7 +12,7 @@ export interface IRequest {
 	headers: Record<string, string | string[] | undefined>;
 	body: unknown;
 	query: Record<string, string | string[] | undefined>;
-	path: string;
+	url: string;
 	method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'HEAD';
 }
 

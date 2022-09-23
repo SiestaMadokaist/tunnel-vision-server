@@ -61,7 +61,7 @@ export class ClientSQSHub {
 				data,
 				params: request.query,
 				headers: request.headers as AxiosRequestHeaders,
-				url: request.path
+				url: request.url
 			})
 			.catch((error: AxiosError) => {
 				if (error.isAxiosError) {
@@ -73,7 +73,7 @@ export class ClientSQSHub {
 				throw error;
 			});
 		return {
-			data: response?.data,
+			body: response?.data,
 			headers: response?.headers ?? {},
 			statusCode: response?.status ?? 500,
 			requestId: request.requestId
@@ -94,7 +94,7 @@ export class ClientSQSHub {
 
 	protected async handleMessage(message: SQSMessage): Promise<void> {
 		const request: IRequestMessage = JSON.parse(message.Body ?? '{}');
-		this.log(`received: ${request.path} #${request.requestId}`);
+		this.log(`received: ${request.url} #${request.requestId}`);
 		const response = await this.getResponse(request);
 		this.publish(response);
 	}

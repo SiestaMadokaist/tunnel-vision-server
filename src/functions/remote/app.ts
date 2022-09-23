@@ -2,21 +2,29 @@ import express, { NextFunction, Request, Response } from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import sls from '@vendia/serverless-express';
-import { RemoteHubInstance } from './instances/SQSHubInstance';
-const hub = RemoteHubInstance;
+import { ProxyForward } from '../../usecases/ProxyForward';
+import { ViewLog } from '../../usecases/ViewLog';
 const app = express();
 app.use(bodyParser.json());
 app.use(cors());
+app.get('/history-log', (_req, res, next) => {
+	(async () => {
+		const useCase = new ViewLog();
+		const response = await useCase.execute();
+		await res.json({ data: response });
+	})().catch(next);
+});
 app.use((req: Request, res: Response, next: NextFunction) => {
 	(async () => {
-		const response = await hub.getResponse({
+		const useCase = new ProxyForward({
 			body: req.body,
 			headers: req.headers,
 			query: req.query as Record<string, string>,
-			path: req.path,
+			url: req.path,
 			method: req.method as 'GET'
 		});
-		res.status(response.statusCode).send(response.data);
+		const response = await useCase.execute();
+		res.status(response.statusCode).send(response.body);
 	})().catch(next);
 });
 
