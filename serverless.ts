@@ -30,7 +30,7 @@ const serverlessConfiguration: AWS = {
 	},
 	functions: { app },
 	package: {
-		exclude: ['node_modules/aws-sdk', 'node_modules/typescript'],
+		exclude: ['node_modules/aws-sdk/**', 'node_modules/typescript'],
 		individually: true
 	},
 	custom: {
