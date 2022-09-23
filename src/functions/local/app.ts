@@ -21,3 +21,7 @@ async function main(): Promise<void> {
 if (process.argv[1] === __filename) {
 	main();
 }
+
+if (process.argv[1].endsWith('node_modules/.bin/tunnel-vision')) {
+	main();
+}
