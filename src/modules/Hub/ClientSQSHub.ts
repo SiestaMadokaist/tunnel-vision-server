@@ -5,6 +5,7 @@ import EventEmitter from 'events';
 import axios, { AxiosError, AxiosInstance, AxiosRequestHeaders } from 'axios';
 import { IRequestMessage, IResponse } from './interface';
 import { Writable } from 'stream';
+import { TIME } from '../../helper/TIME';
 export interface IClientSQSHub {
 	incoming: {
 		channel: string;
@@ -25,7 +26,7 @@ export interface IRespEmitter<O> extends EventEmitter {
 export class ClientSQSHub {
 	#memo = new Memoizer<{
 		consumer: Consumer;
-		started: boolean;
+		started: Promise<boolean>;
 	}>();
 	#publishCounter: number = 0;
 	constructor(private props: IClientSQSHub) {}
@@ -38,8 +39,21 @@ export class ClientSQSHub {
 		this.props.stdout.write(`${message}\n`);
 	}
 
-	start(): boolean {
-		return this.#memo.memoize('started', () => {
+	private async connect(): Promise<void> {
+		const command = new sqs.SendMessageCommand({
+			MessageBody: JSON.stringify({ type: 'connect' }),
+			QueueUrl: this.props.outgoing.channel
+		});
+		this.log(`${this.#publishCounter} ClientHub: connecting to ${this.props.outgoing.channel}`);
+		await this.client().send(command).catch(console.error);
+	}
+
+	start(): Promise<boolean> {
+		return this.#memo.memoize('started', async () => {
+			setInterval(() => {
+				this.connect().catch(console.error);
+			}, TIME.MINUTE);
+			await this.connect();
 			const consumer = this.requestConsumer();
 			consumer.start();
 			return true;
@@ -76,7 +90,8 @@ export class ClientSQSHub {
 			body: response?.data,
 			headers: response?.headers ?? {},
 			statusCode: response?.status ?? 500,
-			requestId: request.requestId
+			requestId: request.requestId,
+			type: 'response'
 		};
 	}
 

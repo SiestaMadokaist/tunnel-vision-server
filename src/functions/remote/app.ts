@@ -28,6 +28,13 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 	})().catch(next);
 });
 
+app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
+	if (err instanceof Error) {
+		res.json({ message: err.message, name: err.name });
+	} else {
+		res.json({ message: 'something went wrong', name: 'UnknownError' });
+	}
+});
 export const handler = sls({ app });
 
 const main = () => {

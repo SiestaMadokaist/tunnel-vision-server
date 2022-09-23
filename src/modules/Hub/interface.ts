@@ -6,6 +6,7 @@ export interface IResponse extends IHubMessage {
 	headers: Record<string, string>;
 	body: unknown;
 	statusCode: number;
+	type: 'connect' | 'response';
 }
 
 export interface IRequest {

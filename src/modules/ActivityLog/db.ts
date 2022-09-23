@@ -2,8 +2,7 @@ import dynamoose from 'dynamoose';
 import { SchemaDefinition } from 'dynamoose/dist/Schema';
 import { RuntimeEnv } from '../../config/RuntimeEnv';
 export enum ActivityLogIndex {
-	OWNER_CREATEDAT = 'owner-createdAt',
-	OWNER_REQUESTID = 'owner-requestId'
+	OWNER_CREATEDAT = 'owner-createdAt'
 }
 
 export type RequestID = `${number}-${number}`;
@@ -24,15 +23,8 @@ const activityLogSchemaField: Record<keyof IActivityLog, SchemaDefinition['']> =
 		hashKey: true,
 		index: [
 			{
-				rangeKey: 'requestId',
-				name: ActivityLogIndex.OWNER_REQUESTID,
-				throughput: 'ON_DEMAND',
-				type: 'local'
-			},
-			{
 				rangeKey: 'createdAt',
 				name: ActivityLogIndex.OWNER_CREATEDAT,
-				throughput: 'ON_DEMAND',
 				type: 'global'
 			}
 		]
@@ -49,16 +41,16 @@ const activityLogSchemaField: Record<keyof IActivityLog, SchemaDefinition['']> =
 	},
 	requestId: {
 		type: String,
-		required: true
+		required: true,
+		rangeKey: true
 	},
 	data: {
-		type: Object
+		type: [Object, dynamoose.type.NULL]
 	}
 };
 const schema = new dynamoose.Schema(activityLogSchemaField, { saveUnknown: true });
-
 const tableName = `${RuntimeEnv.NODE_ENV}-activity_logs`;
-export const ActivityLogModel = dynamoose.model(tableName, schema);
+export const ActivityLogModel = dynamoose.model(tableName, schema, { throughput: 'ON_DEMAND' });
 export const ActivityLogsTable = new dynamoose.Table(tableName, [ActivityLogModel], {
 	create: false
 });

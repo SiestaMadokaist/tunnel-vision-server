@@ -3,7 +3,7 @@ import { Item } from 'dynamoose/dist/Item';
 import { RuntimeEnv } from '../../config/RuntimeEnv';
 import { TIME } from '../../helper/TIME';
 import { IRequest, IResponse } from '../Hub/interface';
-import { ActivityLogIndex, ActivityLogModel, IActivityLog } from './db';
+import { ActivityLogIndex, ActivityLogModel, IActivityLog, RequestID } from './db';
 interface IActivityRecord extends IActivityLog, Item {}
 const owner = RuntimeEnv.OWNER as IActivityLog['owner'];
 
@@ -24,7 +24,7 @@ export class ActivityLog {
 
 	async lastActive(): Promise<number> {
 		const query = await this.model()
-			.query(owner)
+			.query({ owner })
 			.using(ActivityLogIndex.OWNER_CREATEDAT)
 			.sort('descending')
 			.limit(1);
@@ -37,14 +37,14 @@ export class ActivityLog {
 
 	async requestResponses(): Promise<IRequestResponse[]> {
 		const query = this.model()
-			.query(owner)
+			.query({ owner })
 			.using(ActivityLogIndex.OWNER_CREATEDAT)
 			.limit(100)
 			.filter('activityType')
 			.not()
 			.eq('connect');
 		const data = await query.exec();
-		const accumulator: Record<IActivityLog['requestId'], IRequestResponse> = {};
+		const accumulator: Record<RequestID, IRequestResponse> = {};
 		for (const datum of data) {
 			if (datum.activityType === 'connect') {
 				continue;
@@ -61,13 +61,22 @@ export class ActivityLog {
 		return result;
 	}
 
-	private async saveRecord(params: Omit<IActivityLog, 'createdAt'>): Promise<void> {
-		await this.model().create({
-			activityType: params.activityType,
-			data: params.data,
-			owner: params.owner,
-			requestId: params.requestId
-		});
+	private async saveRecord(
+		params: Omit<IActivityLog, 'createdAt'>,
+		overwrite: boolean = false
+	): Promise<void> {
+		console.log({ saving: params });
+		const saved = await this.model().create(
+			{
+				activityType: params.activityType,
+				data: params.data,
+				owner: params.owner,
+				requestId: params.requestId,
+				createdAt: 0
+			},
+			{ overwrite }
+		);
+		console.log({ saved });
 	}
 
 	async recordRequest(requestId: IActivityLog['requestId'], request: IRequest): Promise<void> {
@@ -89,12 +98,14 @@ export class ActivityLog {
 	}
 
 	async recordConnect(): Promise<void> {
-		const rng = Math.floor(Math.random() * Math.pow(10, 7));
-		await this.saveRecord({
-			activityType: 'connect',
-			data: null,
-			owner,
-			requestId: `${Date.now()}-${rng}`
-		});
+		await this.saveRecord(
+			{
+				activityType: 'connect',
+				data: null,
+				owner,
+				requestId: `connect` as RequestID
+			},
+			true
+		);
 	}
 }
