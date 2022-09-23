@@ -28,9 +28,9 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 	})().catch(next);
 });
 
-app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
-	if (err instanceof Error) {
-		res.json({ message: err.message, name: err.name });
+app.use((error: Error, _req: Request, res: Response, _next: NextFunction) => {
+	if (error instanceof Error) {
+		res.json({ message: error.message, name: error.name });
 	} else {
 		res.json({ message: 'something went wrong', name: 'UnknownError' });
 	}

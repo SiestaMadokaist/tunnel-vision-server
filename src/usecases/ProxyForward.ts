@@ -1,4 +1,5 @@
 import { Memoizer } from '../helper/Memoizer';
+import { TIME } from '../helper/TIME';
 import { RemoteHubInstance as remoteHub } from '../instances/SQSHubInstance';
 import { ActivityLog } from '../modules/ActivityLog';
 import { RequestID } from '../modules/ActivityLog/db';
@@ -21,9 +22,9 @@ export class ProxyForward {
 	}
 
 	async execute(): Promise<IResponse> {
-		const isActive = await activityLog.isActive();
-		if (isActive === false) {
-			throw new Error('Client Inactive');
+		const lastActiveDelay = await activityLog.lastActiveDelay();
+		if (lastActiveDelay > 1 * TIME.MINUTE) {
+			throw new Error(`Client Inactive for ${lastActiveDelay}`);
 		}
 		await activityLog.recordRequest(this.requestId(), this.req);
 		const response = await remoteHub.getResponse(this.requestId(), this.req);
@@ -33,15 +34,8 @@ export class ProxyForward {
 }
 
 async function main(): Promise<void> {
-	console.log('recording');
-	const recordConnect = await activityLog.recordRequest('a' as any, {
-		body: {},
-		headers: {},
-		method: 'POST',
-		query: {},
-		url: 'test'
-	});
-	console.log({ recordConnect });
+	await activityLog.recordConnect();
+	console.log('done');
 }
 
 if (process.argv[1] === __filename) {

@@ -1,7 +1,6 @@
 import { ModelType } from 'dynamoose/dist/General';
 import { Item } from 'dynamoose/dist/Item';
 import { RuntimeEnv } from '../../config/RuntimeEnv';
-import { TIME } from '../../helper/TIME';
 import { IRequest, IResponse } from '../Hub/interface';
 import { ActivityLogIndex, ActivityLogModel, IActivityLog, RequestID } from './db';
 interface IActivityRecord extends IActivityLog, Item {}
@@ -17,9 +16,9 @@ export class ActivityLog {
 		return ActivityLogModel as ModelType<IActivityRecord>;
 	}
 
-	async isActive(at: number = Date.now()): Promise<boolean> {
+	async lastActiveDelay(at: number = Date.now()): Promise<number> {
 		const lastActive = await this.lastActive();
-		return at - lastActive < TIME.MINUTE;
+		return at - lastActive;
 	}
 
 	async lastActive(): Promise<number> {
@@ -62,21 +61,20 @@ export class ActivityLog {
 	}
 
 	private async saveRecord(
-		params: Omit<IActivityLog, 'createdAt'>,
+		params: Partial<IActivityLog>,
 		overwrite: boolean = false
 	): Promise<void> {
 		console.log({ saving: params });
-		const saved = await this.model().create(
+		await this.model().create(
 			{
 				activityType: params.activityType,
 				data: params.data,
 				owner: params.owner,
 				requestId: params.requestId,
-				createdAt: 0
+				createdAt: params.createdAt
 			},
 			{ overwrite }
 		);
-		console.log({ saved });
 	}
 
 	async recordRequest(requestId: IActivityLog['requestId'], request: IRequest): Promise<void> {
@@ -103,7 +101,9 @@ export class ActivityLog {
 				activityType: 'connect',
 				data: null,
 				owner,
-				requestId: `connect` as RequestID
+				requestId: `connect` as RequestID,
+				createdAt: Date.now(),
+				_uuid: '0000-0000'
 			},
 			true
 		);
