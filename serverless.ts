@@ -1,6 +1,7 @@
 import type { AWS } from '@serverless/typescript';
-import { BuildEnv, RuntimeEnv } from './src/config/env';
-import { app } from './src/functions/remote';
+import { BuildEnv } from './src/config/BuildEnv';
+import { RuntimeEnv } from './src/config/RuntimeEnv';
+import { functions } from './src/functions/remote';
 
 const serverlessConfiguration: AWS = {
 	service: BuildEnv.SERVICE_NAME,
@@ -12,7 +13,7 @@ const serverlessConfiguration: AWS = {
 		name: 'aws',
 		runtime: 'nodejs16.x',
 		versionFunctions: false,
-		stage: RuntimeEnv.NODE_ENV,
+		stage: BuildEnv.NAMESPACE,
 		deploymentBucket: {
 			name: BuildEnv.DEPLOY_BUCKET
 		},
@@ -26,10 +27,11 @@ const serverlessConfiguration: AWS = {
 		environment: {
 			VERSION: '1',
 			AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1',
-			NODE_OPTIONS: '--enable-source-maps --stack-trace-limit=1000'
+			NODE_OPTIONS: '--enable-source-maps --stack-trace-limit=1000',
+			...RuntimeEnv
 		}
 	},
-	functions: { app },
+	functions,
 	package: {
 		exclude: ['node_modules/aws-sdk/**', 'node_modules/typescript'],
 		individually: true
@@ -37,7 +39,7 @@ const serverlessConfiguration: AWS = {
 	custom: {
 		customDomain: {
 			domainName: BuildEnv.DOMAIN_NAME,
-			stage: RuntimeEnv.NODE_ENV,
+			stage: BuildEnv.NAMESPACE,
 			createRoute53Record: false
 		},
 		esbuild: {

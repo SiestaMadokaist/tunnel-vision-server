@@ -1,5 +1,5 @@
 import dynamoose from 'dynamoose';
-import { RuntimeEnv } from '../config/env';
+import { RuntimeEnv } from '../config/RuntimeEnv';
 const schema = new dynamoose.Schema(
 	{
 		headers: Object,

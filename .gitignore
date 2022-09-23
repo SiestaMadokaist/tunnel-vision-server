@@ -13,3 +13,4 @@ lib/
 dist/
 sample
 src/playground
+.envs/

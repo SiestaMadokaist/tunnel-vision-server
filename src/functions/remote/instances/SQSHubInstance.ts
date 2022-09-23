@@ -1,4 +1,4 @@
-import { RuntimeEnv } from '../../../config/env';
+import { RuntimeEnv } from '../../../config/RuntimeEnv';
 import { RemoteSQSHub } from '../../../modules/Hub/RemoteSQSHub';
 import { SQSClient } from '@aws-sdk/client-sqs';
 

@@ -3,3 +3,4 @@
 .devcontainer
 .husky
 .git
+.envs/*
