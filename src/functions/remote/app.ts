@@ -2,15 +2,15 @@ import express, { NextFunction, Request, Response } from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import sls from '@vendia/serverless-express';
-import { ProxyForward } from '../../usecases/ProxyForward';
 import { ViewLog } from '../../usecases/ViewLog';
 import { RecordConnect } from '../../usecases/Connect';
+import { ProxyForward } from '../../usecases/ProxyForward';
 
 const app = express();
 app.use(bodyParser.json());
 app.use(cors());
 
-app.get('/$internals/histories', (_req, res, next) => {
+app.get('/~internals/histories', (_req, res, next) => {
 	(async () => {
 		const useCase = new ViewLog();
 		const response = await useCase.execute();
@@ -18,7 +18,7 @@ app.get('/$internals/histories', (_req, res, next) => {
 	})().catch(next);
 });
 
-app.put('/$internals/connect', (_req, res, next) => {
+app.put('/~internals/connect', (_req, res, next) => {
 	(async () => {
 		const useCase = new RecordConnect();
 		const response = await useCase.execute();
