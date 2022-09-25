@@ -63,9 +63,9 @@ export class ActivityLog {
 	private async saveRecord(
 		params: Partial<IActivityLog>,
 		overwrite: boolean = false
-	): Promise<void> {
+	): Promise<IActivityRecord> {
 		console.log({ saving: params });
-		await this.model().create(
+		return await this.model().create(
 			{
 				activityType: params.activityType,
 				data: params.data,
@@ -95,8 +95,8 @@ export class ActivityLog {
 		});
 	}
 
-	async recordConnect(): Promise<void> {
-		await this.saveRecord(
+	async recordConnect(): Promise<IActivityRecord> {
+		return this.saveRecord(
 			{
 				activityType: 'connect',
 				data: null,

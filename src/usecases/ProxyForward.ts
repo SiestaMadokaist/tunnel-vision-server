@@ -1,3 +1,4 @@
+import { RuntimeEnv } from '../config/RuntimeEnv';
 import { Memoizer } from '../helper/Memoizer';
 import { TIME } from '../helper/TIME';
 import { RemoteHubInstance as remoteHub } from '../instances/SQSHubInstance';
@@ -19,10 +20,11 @@ export class ProxyForward {
 	}
 
 	async execute(): Promise<IResponse> {
+		const lastActive = await activityLog.lastActive();
 		const inactiveDuration = await activityLog.inactiveDuration();
 		if (inactiveDuration > 1 * TIME.MINUTE) {
 			const inactiveMinute = (inactiveDuration / TIME.MINUTE).toFixed(3)
-			throw new Error(`Client Inactive for ${inactiveMinute} minute`);
+			throw new Error(`(${RuntimeEnv.OWNER}) last connection was ${new Date(lastActive)} (${inactiveMinute} minute ago)`);
 		}
 		await activityLog.recordRequest(this.requestId(), this.req);
 		const response = await remoteHub.getResponse(this.requestId(), this.req);
