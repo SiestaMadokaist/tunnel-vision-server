@@ -6,10 +6,6 @@ import { RequestID } from '../modules/ActivityLog/db';
 import { IRequest, IResponse } from '../modules/Hub/interface';
 
 const activityLog = new ActivityLog();
-remoteHub.onConnect(() => {
-	console.log(`record connect at ${new Date()}`);
-	activityLog.recordConnect().catch(console.error);
-});
 
 export class ProxyForward {
 	#memo = new Memoizer<{ requestId: RequestID }>();
@@ -22,13 +18,7 @@ export class ProxyForward {
 		});
 	}
 
-	async boot(): Promise<void> {
-		remoteHub.start();
-		await new Promise((rs) => setTimeout(rs, 50));
-	}
-
 	async execute(): Promise<IResponse> {
-		await this.boot();
 		const inactiveDuration = await activityLog.inactiveDuration();
 		if (inactiveDuration > 1 * TIME.MINUTE) {
 			const inactiveMinute = (inactiveDuration / TIME.MINUTE).toFixed(3)

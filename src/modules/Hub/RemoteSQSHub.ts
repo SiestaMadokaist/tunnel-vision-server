@@ -78,11 +78,6 @@ export class RemoteSQSHub {
 		return requestId;
 	}
 
-	onConnect(cb: () => void): void {
-		this.start();
-		this.#emitter.on('connect', cb);
-	}
-
 	protected async handleMessage(message: SQSMessage): Promise<void> {
 		const data: IResponse = JSON.parse(message.Body ?? '{}');
 		if (data.type === 'connect') {
