@@ -16,7 +16,7 @@ export class ActivityLog {
 		return ActivityLogModel as ModelType<IActivityRecord>;
 	}
 
-	async lastActiveDelay(at: number = Date.now()): Promise<number> {
+	async inactiveDuration(at: number = Date.now()): Promise<number> {
 		const lastActive = await this.lastActive();
 		return at - lastActive;
 	}

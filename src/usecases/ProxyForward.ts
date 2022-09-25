@@ -10,6 +10,7 @@ remoteHub.onConnect(() => {
 	console.log(`record connect at ${new Date()}`);
 	activityLog.recordConnect().catch(console.error);
 });
+
 export class ProxyForward {
 	#memo = new Memoizer<{ requestId: RequestID }>();
 	constructor(private req: IRequest) {}
@@ -21,10 +22,17 @@ export class ProxyForward {
 		});
 	}
 
+	async boot(): Promise<void> {
+		remoteHub.start();
+		await new Promise((rs) => setTimeout(rs, 50));
+	}
+
 	async execute(): Promise<IResponse> {
-		const lastActiveDelay = await activityLog.lastActiveDelay();
-		if (lastActiveDelay > 1 * TIME.MINUTE) {
-			throw new Error(`Client Inactive for ${lastActiveDelay}`);
+		await this.boot();
+		const inactiveDuration = await activityLog.inactiveDuration();
+		if (inactiveDuration > 1 * TIME.MINUTE) {
+			const inactiveMinute = (inactiveDuration / TIME.MINUTE).toFixed(3)
+			throw new Error(`Client Inactive for ${inactiveMinute} minute`);
 		}
 		await activityLog.recordRequest(this.requestId(), this.req);
 		const response = await remoteHub.getResponse(this.requestId(), this.req);
