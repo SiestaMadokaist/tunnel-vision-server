@@ -64,14 +64,14 @@ export class ActivityLog {
 		params: Partial<IActivityLog>,
 		overwrite: boolean = false
 	): Promise<IActivityRecord> {
-		console.log({ saving: params });
 		return await this.model().create(
 			{
 				activityType: params.activityType,
 				data: params.data,
 				owner: params.owner,
 				requestId: params.requestId,
-				createdAt: params.createdAt
+				createdAt: params.createdAt,
+				_uuid: params._uuid ?? undefined,
 			},
 			{ overwrite }
 		);
@@ -87,9 +87,15 @@ export class ActivityLog {
 	}
 
 	async recordResponse(response: IResponse): Promise<void> {
+		const presave = { ...response };
+		if (presave.body instanceof Buffer) {
+			if (presave.body.length > 1000) {
+				presave.body = `Buffer<...>`;
+			}
+		}
 		await this.saveRecord({
 			activityType: 'response',
-			data: response,
+			data: presave,
 			owner,
 			requestId: response.requestId
 		});

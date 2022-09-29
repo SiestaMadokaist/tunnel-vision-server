@@ -78,12 +78,23 @@ export class RemoteSQSHub {
 		return requestId;
 	}
 
+	decode(data: IResponse): IResponse {
+		const headers = data.headers ?? {};
+		if (headers['content-type']?.startsWith('image/')) {
+			data.body = Buffer.from((data.body ?? '') as string , 'base64')
+			headers['Content-Type'] = 'image/png';
+			data.headers = headers;
+		}
+		return data;
+	}
+
 	protected async handleMessage(message: SQSMessage): Promise<void> {
 		const data: IResponse = JSON.parse(message.Body ?? '{}');
 		if (data.type === 'connect') {
 			this.#emitter.emit('connect', data);
 			return;
 		}
+		this.decode(data);
 		assert.ok(data.requestId);
 		this.#emitter.emit(data.requestId, data);
 	}

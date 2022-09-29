@@ -36,13 +36,18 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 			method: req.method as 'GET'
 		});
 		const response = await useCase.execute();
+		const headers = response.headers ?? {};
+		for (const key of Object.keys(headers)) {
+			res.setHeader(key, headers[key]);
+		}
 		res.status(response.statusCode).send(response.body);
 	})().catch(next);
 });
 
 app.use((error: Error, _req: Request, res: Response, _next: NextFunction) => {
+	// console.log(error?.stack);
 	if (error instanceof Error) {
-		res.json({ message: error.message, name: error.name });
+		res.json({ message: error.message, name: error.name, stack: error?.stack });
 	} else {
 		res.json({ message: 'something went wrong', name: 'UnknownError' });
 	}
