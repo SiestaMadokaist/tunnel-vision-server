@@ -25,7 +25,7 @@ const serverlessConfiguration: AWS = {
 			role: BuildEnv.IAM_ROLE
 		},
 		environment: {
-			VERSION: '3',
+			VERSION: '4',
 			AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1',
 			NODE_OPTIONS: '--enable-source-maps --stack-trace-limit=1000',
 			...RuntimeEnv

@@ -38,7 +38,12 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 		const response = await useCase.execute();
 		const headers = response.headers ?? {};
 		for (const key of Object.keys(headers)) {
-			res.setHeader(key, headers[key]);
+			if (headers['content-type'] === 'image/png') {
+				res.setHeader(key, headers[key]);
+				res.setHeader('content-encoding', 'base64');
+			} else {
+				res.setHeader(key, headers[key]);
+			}
 		}
 		res.status(response.statusCode).send(response.body);
 	})().catch(next);
@@ -52,7 +57,7 @@ app.use((error: Error, _req: Request, res: Response, _next: NextFunction) => {
 		res.json({ message: 'something went wrong', name: 'UnknownError' });
 	}
 });
-export const handler = sls({ app });
+export const handler = sls({ app, binarySettings: { contentTypes: ['image/png', 'image/jpg', 'image/jpeg'] }});
 
 const main = () => {
 	app.listen(3001, () => {
