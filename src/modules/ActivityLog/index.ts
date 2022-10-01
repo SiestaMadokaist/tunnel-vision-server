@@ -41,7 +41,8 @@ export class ActivityLog {
 			.limit(100)
 			.filter('activityType')
 			.not()
-			.eq('connect');
+			.eq('connect')
+			.sort('descending');
 		const data = await query.exec();
 		const accumulator: Record<RequestID, IRequestResponse> = {};
 		for (const datum of data) {
