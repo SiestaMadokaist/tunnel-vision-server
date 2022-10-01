@@ -42,7 +42,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 				res.setHeader(key, headers[key]);
 				res.setHeader('content-encoding', 'base64');
 			} else {
-				res.setHeader(key, headers[key]);
+				// res.setHeader(key, headers[key]);
 			}
 		}
 		res.status(response.statusCode).send(response.body);
@@ -57,12 +57,14 @@ app.use((error: Error, _req: Request, res: Response, _next: NextFunction) => {
 		res.json({ message: 'something went wrong', name: 'UnknownError' });
 	}
 });
-export const handler = sls({ app, binarySettings: { contentTypes: ['image/png', 'image/jpg', 'image/jpeg'] }});
+export const handler = sls({ app });
 
-const main = () => {
+const main = async () => {
+	// const sample = require('./test/sample.json');
 	app.listen(3001, () => {
 		console.log(`listening on 3001`);
 	});
+	// await handler(sample, {} as any, console.log);
 };
 
 if (process.argv[1] === __filename) {
