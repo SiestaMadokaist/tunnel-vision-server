@@ -38,11 +38,12 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 		const response = await useCase.execute();
 		const headers = response.headers ?? {};
 		for (const key of Object.keys(headers)) {
-			if (headers['content-type'] === 'image/png') {
+			if (key === 'content-type' && headers['content-type'] === 'image/png') {
 				res.setHeader(key, headers[key]);
 				res.setHeader('content-encoding', 'base64');
-			} else {
-				// res.setHeader(key, headers[key]);
+			}
+			if (key.toLowerCase().startsWith('x-')) {
+				res.setHeader(key, headers[key]);
 			}
 		}
 		res.status(response.statusCode).send(response.body);
@@ -50,7 +51,6 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 });
 
 app.use((error: Error, _req: Request, res: Response, _next: NextFunction) => {
-	// console.log(error?.stack);
 	if (error instanceof Error) {
 		res.json({ message: error.message, name: error.name, stack: error?.stack });
 	} else {
