@@ -8,6 +8,7 @@ import { ProxyForward } from '../../usecases/ProxyForward';
 
 const app = express();
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded());
 app.use(cors());
 
 app.get('/~internals/histories', (_req, res, next) => {
@@ -60,11 +61,9 @@ app.use((error: Error, _req: Request, res: Response, _next: NextFunction) => {
 export const handler = sls({ app });
 
 const main = async () => {
-	// const sample = require('./test/sample.json');
 	app.listen(3001, () => {
 		console.log(`listening on 3001`);
 	});
-	// await handler(sample, {} as any, console.log);
 };
 
 if (process.argv[1] === __filename) {

@@ -38,7 +38,7 @@ export class ActivityLog {
 		const query = this.model()
 			.query({ owner })
 			.using(ActivityLogIndex.OWNER_CREATEDAT)
-			.limit(100)
+			.limit(30)
 			.filter('activityType')
 			.not()
 			.eq('connect')
