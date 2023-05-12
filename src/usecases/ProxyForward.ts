@@ -22,8 +22,9 @@ export class ProxyForward {
 	async execute(): Promise<IResponse> {
 		const lastSession = await activityLog.lastSession()
 		const now = Date.now();
-		if (lastSession.isExpired(now)) {
-			const inactiveDuration = lastSession.inactiveDuration(now)
+		const isExpired = await lastSession.isExpired(now);
+		if (isExpired) {
+			const inactiveDuration = await lastSession.inactiveDuration(now)
 			const inactiveMinute = (inactiveDuration / TIME.MINUTE).toFixed(3)
 			const lastActive = lastSession.createdAt
 			throw new Error(`(${RuntimeEnv.OWNER}) last connection was ${new Date(lastActive)} (${inactiveMinute} minute ago)`);

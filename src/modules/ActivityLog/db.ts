@@ -24,8 +24,8 @@ export interface IActivityLog {
 }
 
 export interface IActivityLogVirtual {
-	isExpired(now: number): boolean;
-	inactiveDuration(now: number): number;
+	isExpired(now: number): Promise<boolean>;
+	inactiveDuration(now: number): Promise<number>;
 }
 
 const activityLogSchemaField: Record<keyof IActivityLog, SchemaDefinition['']> = {
@@ -99,15 +99,17 @@ const tableName = `${RuntimeEnv.NODE_ENV}-activity_logs`;
 export const ActivityLogModel = dynamoose.model(tableName, schema, { throughput: 'ON_DEMAND' });
 
 
-const isExpired: IActivityLogVirtual['isExpired'] = function (this: IActivityLogVirtual, now) {
-	return this.inactiveDuration(now) > (1 * TIME.MINUTE);
+const isExpired: IActivityLogVirtual['isExpired'] = async function (this: IActivityLogVirtual, now) {
+	// return this.inactiveDuration(now) > (1 * TIME.MINUTE);
+	const inactiveDuration = await this.inactiveDuration(now);
+	return inactiveDuration > (5 * TIME.MINUTE);
 }
 
-const inactiveDuration: IActivityLogVirtual['inactiveDuration'] = function (this: IActivityLog, now) {
+const inactiveDuration: IActivityLogVirtual['inactiveDuration'] = async function (this: IActivityLog, now) {
 	return now - this.createdAt;
 }
 
-ActivityLogModel.methods.set('isExpired', isExpired);
-ActivityLogModel.methods.set('inactiveDuration', inactiveDuration);
+ActivityLogModel.methods.item.set('isExpired', isExpired);
+ActivityLogModel.methods.item.set('inactiveDuration', inactiveDuration);
 
 export const ActivityLogsTable = new dynamoose.Table(tableName, [ActivityLogModel]);

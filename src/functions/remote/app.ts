@@ -5,6 +5,7 @@ import sls from '@vendia/serverless-express';
 import { ViewLog } from '../../usecases/ViewLog';
 import { RecordConnect } from '../../usecases/Connect';
 import { ProxyForward } from '../../usecases/ProxyForward';
+import { ActivityLog } from '../../modules/ActivityLog';
 
 const app = express();
 app.use(bodyParser.json());
@@ -61,6 +62,10 @@ app.use((error: Error, _req: Request, res: Response, _next: NextFunction) => {
 export const handler = sls({ app });
 
 const main = async () => {
+	// const repo = new ActivityLog();
+	// const last = await repo.lastSession();
+	// console.log(last)
+	// console.log(await last.isExpired(Date.now()));
 	app.listen(3001, () => {
 		console.log(`listening on 3001`);
 	});
