@@ -2,9 +2,9 @@ import { ModelType } from 'dynamoose/dist/General';
 import { Item } from 'dynamoose/dist/Item';
 import { RuntimeEnv } from '../../config/RuntimeEnv';
 import { IRequest, IResponse } from '../Hub/interface';
-import { ActivityLogIndex, ActivityLogModel, IActivityLog, RequestID } from './db';
+import { ActivityLogIndex, ActivityLogModel, ConnectRequestID, IActivityLog, IActivityLogVirtual, RequestID } from './db';
 import { minimatch } from 'minimatch';
-interface IActivityRecord extends IActivityLog, Item {}
+interface IActivityRecord extends IActivityLog, Item, IActivityLogVirtual { }
 const owner = RuntimeEnv.OWNER as IActivityLog['owner'];
 
 export interface IRequestResponse {
@@ -21,27 +21,36 @@ export class ActivityLog {
 		return ActivityLogModel as ModelType<IActivityRecord>;
 	}
 
-	async inactiveDuration(at: number = Date.now()): Promise<number> {
-		const lastActive = await this.lastActive();
-		return at - lastActive;
-	}
+	// private async inactiveDuration(at: number = Date.now()): Promise<number> {
+	// 	const lastActive = await this.lastActive();
+	// 	return at - lastActive;
+	// }
 
 	async lastSession(): Promise<IActivityRecord> {
-		throw new Error('TODO');
-	}
-
-	async lastActive(): Promise<number> {
 		const query = await this.model()
 			.query({ owner })
-			.using(ActivityLogIndex.OWNER_CREATEDAT)
-			.sort('descending')
-			.limit(1);
+			.using(ActivityLogIndex.OWNER_REQUESTID)
+			.where('requestId').eq(ConnectRequestID)
 		const items = await query.exec();
 		if (items.length === 0) {
-			return 0;
+			throw new Error('SESSION NOT FOUND')
 		}
-		return items[0].createdAt;
+		const [item] = items;
+		return item
 	}
+
+	// private async lastActive(): Promise<number> {
+	// 	const query = await this.model()
+	// 		.query({ owner })
+	// 		.using(ActivityLogIndex.OWNER_CREATEDAT)
+	// 		.sort('descending')
+	// 		.limit(1);
+	// 	const items = await query.exec();
+	// 	if (items.length === 0) {
+	// 		return 0;
+	// 	}
+	// 	return items[0].createdAt;
+	// }
 
 	async requestResponses(): Promise<IRequestResponse[]> {
 		const query = this.model()
@@ -128,7 +137,7 @@ export class ActivityLog {
 				activityType: 'connect',
 				data: null,
 				owner,
-				requestId: `connect` as RequestID,
+				requestId: ConnectRequestID,
 				createdAt: Date.now(),
 				_uuid: '0000-0000',
 				whitelist,
