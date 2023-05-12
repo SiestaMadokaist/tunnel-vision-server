@@ -3,6 +3,7 @@ import dynamoose from 'dynamoose';
 import { SchemaDefinition, ValueType } from 'dynamoose/dist/Schema';
 import { RuntimeEnv } from '../../config/RuntimeEnv';
 import { TIME } from '../../helper/TIME';
+import { minimatch } from 'minimatch';
 export enum ActivityLogIndex {
 	OWNER_CREATEDAT = 'owner-createdAt',
 	OWNER_REQUESTID = 'owner-requestId'
@@ -26,6 +27,7 @@ export interface IActivityLog {
 export interface IActivityLogVirtual {
 	isExpired(now: number): Promise<boolean>;
 	inactiveDuration(now: number): Promise<number>;
+	shouldAccept(path: string): Promise<boolean>;
 }
 
 const activityLogSchemaField: Record<keyof IActivityLog, SchemaDefinition['']> = {
@@ -48,13 +50,13 @@ const activityLogSchemaField: Record<keyof IActivityLog, SchemaDefinition['']> =
 		]
 	},
 	whitelist: {
-		type: [String],
+		type: Array,
 		default: () => {
-			return ["*"]
+			return ["**/**"]
 		},
 		get(value?: ValueType) {
 			if (!(value instanceof Array)) {
-				return ["*"];
+				return ["**/**"];
 			}
 			return value;
 		},
@@ -109,7 +111,18 @@ const inactiveDuration: IActivityLogVirtual['inactiveDuration'] = async function
 	return now - this.createdAt;
 }
 
-ActivityLogModel.methods.item.set('isExpired', isExpired);
-ActivityLogModel.methods.item.set('inactiveDuration', inactiveDuration);
+const shouldAccept: IActivityLogVirtual['shouldAccept'] = async function (this: IActivityLog, path) {
+	const { whitelist } = this;
+	for (const pattern of whitelist) {
+		const match = minimatch(path, pattern);
+		if (match) { return true; }
+	}
+	return false
+}
+
+const prototype = ActivityLogModel.methods.item;
+prototype.set('isExpired', isExpired);
+prototype.set('inactiveDuration', inactiveDuration);
+prototype.set('shouldAccept', shouldAccept);
 
 export const ActivityLogsTable = new dynamoose.Table(tableName, [ActivityLogModel]);

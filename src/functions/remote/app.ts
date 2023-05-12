@@ -62,13 +62,12 @@ app.use((error: Error, _req: Request, res: Response, _next: NextFunction) => {
 export const handler = sls({ app });
 
 const main = async () => {
-	// const repo = new ActivityLog();
-	// const last = await repo.lastSession();
-	// console.log(last)
-	// console.log(await last.isExpired(Date.now()));
-	app.listen(3001, () => {
-		console.log(`listening on 3001`);
-	});
+	const repo = new ActivityLog();
+	// await repo.recordConnect({ whitelist: ["*"] })
+	const last = await repo.lastSession();
+	const accept = await last.shouldAccept("/v1/test/xxx")
+	console.log(accept);
+
 };
 
 if (process.argv[1] === __filename) {

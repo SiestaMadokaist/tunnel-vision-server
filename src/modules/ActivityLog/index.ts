@@ -3,8 +3,7 @@ import { Item } from 'dynamoose/dist/Item';
 import { RuntimeEnv } from '../../config/RuntimeEnv';
 import { IRequest, IResponse } from '../Hub/interface';
 import { ActivityLogIndex, ActivityLogModel, ConnectRequestID, IActivityLog, IActivityLogVirtual, RequestID } from './db';
-import { minimatch } from 'minimatch';
-interface IActivityRecord extends IActivityLog, Item, IActivityLogVirtual { }
+export interface IActivityRecord extends IActivityLog, Item, IActivityLogVirtual { }
 const owner = RuntimeEnv.OWNER as IActivityLog['owner'];
 
 export interface IRequestResponse {
@@ -118,16 +117,6 @@ export class ActivityLog {
 			owner,
 			requestId: response.requestId
 		});
-	}
-
-	async whitelisted(path: string): Promise<boolean> {
-		const lastSession = await this.lastSession();
-		const { whitelist } = lastSession;
-		for (const w of whitelist) {
-			const match = minimatch(w, path);
-			if (match) { return true; }
-		}
-		return false;
 	}
 
 	async recordConnect(recordParams: IRecordConnect): Promise<IActivityRecord> {
