@@ -19,9 +19,9 @@ app.get('/~internals/histories', (_req, res, next) => {
 	})().catch(next);
 });
 
-app.put('/~internals/connect', (_req, res, next) => {
+app.put('/~internals/connect', (req, res, next) => {
 	(async () => {
-		const useCase = new RecordConnect();
+		const useCase = new RecordConnect(req.body);
 		const response = await useCase.execute();
 		res.json({ data: response });
 	})().catch(next);

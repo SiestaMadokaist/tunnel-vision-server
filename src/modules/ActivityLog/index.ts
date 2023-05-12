@@ -3,12 +3,17 @@ import { Item } from 'dynamoose/dist/Item';
 import { RuntimeEnv } from '../../config/RuntimeEnv';
 import { IRequest, IResponse } from '../Hub/interface';
 import { ActivityLogIndex, ActivityLogModel, IActivityLog, RequestID } from './db';
+import { minimatch } from 'minimatch';
 interface IActivityRecord extends IActivityLog, Item {}
 const owner = RuntimeEnv.OWNER as IActivityLog['owner'];
 
 export interface IRequestResponse {
 	request: IActivityLog;
 	response: IActivityLog;
+}
+
+export interface IRecordConnect {
+	whitelist?: string[];
 }
 
 export class ActivityLog {
@@ -19,6 +24,10 @@ export class ActivityLog {
 	async inactiveDuration(at: number = Date.now()): Promise<number> {
 		const lastActive = await this.lastActive();
 		return at - lastActive;
+	}
+
+	async lastSession(): Promise<IActivityRecord> {
+		throw new Error('TODO');
 	}
 
 	async lastActive(): Promise<number> {
@@ -102,7 +111,18 @@ export class ActivityLog {
 		});
 	}
 
-	async recordConnect(): Promise<IActivityRecord> {
+	async whitelisted(path: string): Promise<boolean> {
+		const lastSession = await this.lastSession();
+		const { whitelist } = lastSession;
+		for (const w of whitelist) {
+			const match = minimatch(w, path);
+			if (match) { return true; }
+		}
+		return false;
+	}
+
+	async recordConnect(recordParams: IRecordConnect): Promise<IActivityRecord> {
+		const whitelist = recordParams?.whitelist ?? ["*"];
 		return this.saveRecord(
 			{
 				activityType: 'connect',
@@ -110,7 +130,8 @@ export class ActivityLog {
 				owner,
 				requestId: `connect` as RequestID,
 				createdAt: Date.now(),
-				_uuid: '0000-0000'
+				_uuid: '0000-0000',
+				whitelist,
 			},
 			true
 		);

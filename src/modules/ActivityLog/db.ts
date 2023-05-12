@@ -1,6 +1,6 @@
 import { randomUUID } from 'crypto';
 import dynamoose from 'dynamoose';
-import { SchemaDefinition } from 'dynamoose/dist/Schema';
+import { SchemaDefinition, ValueType } from 'dynamoose/dist/Schema';
 import { RuntimeEnv } from '../../config/RuntimeEnv';
 export enum ActivityLogIndex {
 	OWNER_CREATEDAT = 'owner-createdAt',
@@ -14,6 +14,7 @@ export interface IActivityLog {
 	createdAt: number;
 	activityType: 'connect' | 'request' | 'response';
 	requestId: RequestID;
+	whitelist: string[];
 	data: unknown;
 	expDate?: number;
 	_uuid?: string;
@@ -37,6 +38,18 @@ const activityLogSchemaField: Record<keyof IActivityLog, SchemaDefinition['']> =
 				type: 'global'
 			}
 		]
+	},
+	whitelist: {
+		type: [String],
+		default: () => {
+			return ["*"]
+		},
+		get(value?: ValueType) {
+			if (!(value instanceof Array)) {
+				return ["*"];
+			}
+			return value;
+		},
 	},
 	createdAt: {
 		type: Number,

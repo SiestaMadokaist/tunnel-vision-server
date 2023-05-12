@@ -34,7 +34,7 @@ export class ProxyForward {
 }
 
 async function main(): Promise<void> {
-	await activityLog.recordConnect();
+	await activityLog.recordConnect({});
 	console.log('done');
 }
 
