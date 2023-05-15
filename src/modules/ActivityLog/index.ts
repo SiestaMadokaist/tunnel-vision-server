@@ -90,6 +90,7 @@ export class ActivityLog {
 				requestId: params.requestId,
 				createdAt: params.createdAt,
 				_uuid: params._uuid ?? undefined,
+				whitelist: params.whitelist ?? undefined,
 			},
 			{ overwrite }
 		);

@@ -63,10 +63,10 @@ export const handler = sls({ app });
 
 const main = async () => {
 	const repo = new ActivityLog();
-	// await repo.recordConnect({ whitelist: ["*"] })
-	const last = await repo.lastSession();
-	const accept = await last.shouldAccept("/v1/test/xxx")
-	console.log(accept);
+	await repo.recordConnect({ whitelist: ["*"] })
+	// const last = await repo.lastSession();
+	// const accept = await last.shouldAccept("/v1/test/xxx")
+	// console.log(accept);
 
 };
 
